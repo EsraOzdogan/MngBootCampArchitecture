@@ -7,12 +7,11 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Core.Persistence.Repositories
 {
-    public interface IAsyncRepository
+    public interface IAsyncRepository<T> where T : Entity
     {
-        public interface IAsyncRepository<T> where T : class // Generic
-        {
             //Bunlari ezberlemeye gerek yok, bakip yapilacak bir sey
             //Linq, Predicate, Expression, Func
             Task<T> GetAsync(Expression<Func<T, bool>> expression); //GetAsyn(m==>m.id=1 & m>10) bunu yapmamizi sagliyor. m==>m.id vs Espression demek //--> tek data getiriyor
@@ -33,6 +32,6 @@ namespace Core.Persistence.Repositories
             Task<T> AddAsync(T Entity);
             Task UpdateAsync(T Entity);  
             Task DeleteAsync(T Entity);
-        }
+        
     }
 }

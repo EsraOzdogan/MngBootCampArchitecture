@@ -23,14 +23,32 @@ namespace Core.Persistence.Repositories
             Context = context;
         }
 
-        public Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> expression)
+        public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            throw new NotImplementedException();
+           return await Context.Set<TEntity>().FirstOrDefaultAsync(predicate);
         }
 
-        public Task<IPaginate<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null, int index = 0, int size = 10, bool enablTracking = true, CancellationToken cancellationToken = default)
+        public async Task<IPaginate<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate = null, 
+                                                          Func<IQueryable<TEntity>,
+                                                          IOrderedQueryable<TEntity>> orderBy = null, 
+                                                          Func<IQueryable<TEntity>, 
+                                                          IIncludableQueryable<TEntity, 
+                                                          object>> include = null, 
+                                                          int index = 0, 
+                                                          int size = 10, 
+                                                          bool enablTracking = true, 
+                                                          CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+           /*return predicate == null;
+            ? await Context.Set<TEntity>().ToListAsync(include,) //-->ToListAsyncs--oldugu gibi datayi döndür*/
+           IQueryable<TEntity> queryable = Query(); //istek bitene kadar aql sorgusu bitene kadar bekliyor 
+            if (enablTracking) queryable = queryable.AsNoTracking(); //eger kullanici enableTrackingi false göndermisse (yani göndermemisse) queryableyi kapatiyoruz
+            if (include!=null) queryable = include(queryable);  //eger join edilcek bir sey yoksa include da gönderileni gönder
+            if (predicate != null) queryable = queryable.Where(predicate);
+
+            if (orderBy  != null)
+                return await orderBy(queryable).ToPaginateAsync(index,size,0, cancellationToken);  ///Elimde br quwryable var bunu paginatee cevirmek icin extent yapıyoruz
+            return await queryable.ToPaginateAsync(index, size, 0, cancellationToken);
         }
 
         public IQueryable<TEntity> Query()
