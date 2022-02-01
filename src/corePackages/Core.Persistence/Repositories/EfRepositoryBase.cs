@@ -7,7 +7,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using static Core.Persistence.Repositories.IAsyncRepository;
 
 namespace Core.Persistence.Repositories
 {
@@ -42,12 +41,17 @@ namespace Core.Persistence.Repositories
            /*return predicate == null;
             ? await Context.Set<TEntity>().ToListAsync(include,) //-->ToListAsyncs--oldugu gibi datayi döndür*/
            IQueryable<TEntity> queryable = Query(); //istek bitene kadar aql sorgusu bitene kadar bekliyor 
-            if (enablTracking) queryable = queryable.AsNoTracking(); //eger kullanici enableTrackingi false göndermisse (yani göndermemisse) queryableyi kapatiyoruz
-            if (include!=null) queryable = include(queryable);  //eger join edilcek bir sey yoksa include da gönderileni gönder
-            if (predicate != null) queryable = queryable.Where(predicate);
+            if (!enablTracking) 
+                queryable = queryable.AsNoTracking(); //eger kullanici enableTrackingi false göndermisse (yani göndermemisse) queryableyi kapatiyoruz
+            if (include!=null) 
+                queryable = include(queryable);  //eger join edilcek bir sey yoksa include da gönderileni gönder
+            if (predicate != null) 
+                queryable = queryable.Where(predicate);
 
             if (orderBy  != null)
                 return await orderBy(queryable).ToPaginateAsync(index,size,0, cancellationToken);  ///Elimde br quwryable var bunu paginatee cevirmek icin extent yapıyoruz
+            
+            
             return await queryable.ToPaginateAsync(index, size, 0, cancellationToken);
         }
 
